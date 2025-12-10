@@ -1,0 +1,89 @@
+# ===========================================
+# Docker Compose for Upwork Job Scraper
+# ===========================================
+
+version: "3.9"
+
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: upwork-scraper
+
+    # Load environment from file
+    env_file:
+      - .env
+
+    # Override environment variables (optional)
+    environment:
+      - LOG_LEVEL=INFO
+      - OUTPUT_PATH=/app/output
+
+    # Mount volumes
+    volumes:
+      # Output directory (Excel files appear here)
+      - ./output:/app/output
+
+      # Profile file (mount your customized profile)
+      - ./profile.yaml:/app/profile.yaml:ro
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Read-only root filesystem (except mounted volumes)
+    read_only: false
+
+    # Restart policy
+    restart: "no"
+
+    # Default command (override as needed)
+    command: [ "--query", "Python Developer", "--pages", "5" ]
+
+  # Development service with browser UI visible
+  scraper-dev:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: upwork-scraper-dev
+
+    env_file:
+      - .env
+
+    environment:
+      - LOG_LEVEL=DEBUG
+      - OUTPUT_PATH=/app/output
+
+    volumes:
+      - ./output:/app/output
+      - ./profile.yaml:/app/profile.yaml:ro
+      # Mount source for live development
+      - ./src:/app/src:ro
+
+    # For debugging with browser UI
+    # Requires X11 forwarding or VNC
+    # environment:
+    #   - DISPLAY=${DISPLAY}
+    # volumes:
+    #   - /tmp/.X11-unix:/tmp/.X11-unix
+
+    command: [ "--no-headless", "--query", "Python Developer", "--pages", "2" ]
+
+    profiles:
+      - dev
+
+# Named volumes (optional)
+volumes:
+  output:
+    driver: local

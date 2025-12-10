@@ -1,0 +1,60 @@
+# ===========================================
+# User Profile for Cover Letter Generation
+# ===========================================
+# Copy this file to profile.yaml and customize with your details
+# This structured format helps LangChain generate personalized cover letters
+
+# Basic Information
+name: "John Doe"
+title: "Senior Python Developer"
+years_experience: 8
+
+# Skills (list your top skills relevant to Upwork jobs)
+skills:
+  - Python
+  - FastAPI
+  - Django
+  - PostgreSQL
+  - Web Scraping
+  - Data Engineering
+  - REST APIs
+  - Docker
+  - AWS
+  - Asyncio
+
+# Professional Bio (used as introduction in cover letters)
+bio: |
+  Passionate software engineer with 8+ years of experience building 
+  scalable web applications and data pipelines. Specialized in Python 
+  backend development with expertise in async programming and cloud 
+  infrastructure. Known for writing clean, maintainable code and 
+  delivering projects on time.
+
+# Key Achievements (bullet points for cover letters)
+achievements:
+  - "Built a high-throughput data pipeline processing 10M+ records daily"
+  - "Reduced API response times by 60% through optimization"
+  - "Led a team of 5 developers on a successful product launch"
+  - "Open source contributor with 500+ GitHub stars"
+
+# Portfolio Links
+portfolio_url: "https://github.com/johndoe"
+linkedin_url: "https://linkedin.com/in/johndoe"
+website_url: "https://johndoe.dev"
+
+# Preferred Rate
+rate: "$50-75/hr"
+availability: "40 hours/week"
+
+# Location (optional, can help with timezone matching)
+location: "United States"
+timezone: "EST"
+
+# Communication Style Preferences (influences cover letter tone)
+tone: "professional"  # Options: professional, friendly, technical, casual
+
+# Additional Notes (anything else the AI should know)
+notes: |
+  I prefer long-term projects over one-time gigs.
+  Available to start immediately.
+  Open to fixed-price or hourly contracts.
