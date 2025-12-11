@@ -131,7 +131,8 @@ async def run_pipeline(args: argparse.Namespace) -> int:
     logger.info(f"Headless Mode: {headless}")
     logger.info(f"Skip Cover Letters: {args.skip_cover_letters}")
     logger.info(f"Proxy Configured: {settings.has_proxy}")
-    logger.info(f"OpenAI Key Configured: {settings.has_openai_key}")
+    logger.info(f"AI Provider: {settings.ai_provider.upper()}")
+    logger.info(f"AI Key Configured: {settings.has_ai_key}")
     logger.info("=" * 60)
     
     if args.dry_run:
@@ -175,8 +176,8 @@ async def run_pipeline(args: argparse.Namespace) -> int:
     jobs_with_letters = filtered_jobs
     
     if not args.skip_cover_letters:
-        if settings.has_openai_key:
-            logger.info("STEP 3: Generating cover letters...")
+        if settings.has_ai_key:
+            logger.info(f"STEP 3: Generating cover letters using {settings.ai_provider.upper()}...")
             
             # Load profile
             profile_path = Path(settings.profile_path)
@@ -187,9 +188,10 @@ async def run_pipeline(args: argparse.Namespace) -> int:
                 try:
                     profile = UserProfile.load(profile_path)
                     generator = CoverLetterGenerator(
-                        openai_api_key=settings.openai_api_key,
+                        api_key=settings.api_key,
                         model=settings.llm_model,
                         profile=profile,
+                        provider=settings.ai_provider,
                     )
                     
                     jobs_with_letters = await generator.generate_batch(filtered_jobs)
@@ -198,7 +200,7 @@ async def run_pipeline(args: argparse.Namespace) -> int:
                     logger.error(f"Cover letter generation failed: {e}")
                     logger.warning("Continuing without cover letters")
         else:
-            logger.warning("STEP 3: Skipping cover letters (no OpenAI API key)")
+            logger.warning(f"STEP 3: Skipping cover letters (no {settings.ai_provider.upper()} API key)")
     else:
         logger.info("STEP 3: Skipping cover letters (--skip-cover-letters)")
     

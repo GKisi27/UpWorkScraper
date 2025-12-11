@@ -1,12 +1,14 @@
 """
 Cover letter generator using LangChain.
 Generates personalized cover letters for Upwork job applications.
+Supports both OpenAI and Google Gemini models.
 """
 
 import asyncio
 from typing import Optional
 
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser
 
 from src.models.job import JobListing
@@ -19,41 +21,56 @@ logger = get_logger(__name__)
 
 class CoverLetterGenerator:
     """
-    Generates personalized cover letters using LangChain and OpenAI.
+    Generates personalized cover letters using LangChain and LLMs.
     
+    Supports both OpenAI (GPT) and Google Gemini models.
     Uses the user's profile and job details to create tailored
     cover letters for each job application.
     """
     
     def __init__(
         self,
-        openai_api_key: str,
-        model: str = "gpt-4o-mini",
+        api_key: str,
+        model: str = "gemini-1.5-flash",
         profile: Optional[UserProfile] = None,
+        provider: str = "gemini",  # "openai" or "gemini"
     ):
         """
         Initialize the generator.
         
         Args:
-            openai_api_key: OpenAI API key
+            api_key: API key (OpenAI or Google)
             model: LLM model to use
             profile: User profile for personalization
+            provider: "openai" or "gemini"
         """
         self.profile = profile
         self.model = model
+        self.provider = provider.lower()
         
-        # Initialize LangChain components
-        self.llm = ChatOpenAI(
-            api_key=openai_api_key,
-            model=model,
-            temperature=0.7,  # Some creativity for personalization
-            max_tokens=500,   # Keep responses concise
-        )
+        # Initialize LangChain components based on provider
+        if self.provider == "gemini":
+            self.llm = ChatGoogleGenerativeAI(
+                google_api_key=api_key,
+                model=model,
+                temperature=0.7,  # Some creativity for personalization
+                max_output_tokens=500,  # Keep responses concise
+            )
+            logger.info(f"CoverLetterGenerator initialized with Google Gemini: {model}")
+        elif self.provider == "openai":
+            self.llm = ChatOpenAI(
+                api_key=api_key,
+                model=model,
+                temperature=0.7,
+                max_tokens=500,
+            )
+            logger.info(f"CoverLetterGenerator initialized with OpenAI: {model}")
+        else:
+            raise ValueError(f"Unsupported provider: {provider}. Use 'openai' or 'gemini'")
         
         self.prompt = get_cover_letter_prompt()
         self.chain = self.prompt | self.llm | StrOutputParser()
-        
-        logger.info(f"CoverLetterGenerator initialized with model: {model}")
+
     
     def set_profile(self, profile: UserProfile) -> None:
         """
@@ -152,17 +169,19 @@ class CoverLetterGenerator:
 
 
 async def create_cover_letter_generator(
-    openai_api_key: str,
+    api_key: str,
     profile_path: str,
-    model: str = "gpt-4o-mini",
+    model: str = "gemini-1.5-flash",
+    provider: str = "gemini",
 ) -> CoverLetterGenerator:
     """
     Factory function to create a configured generator.
     
     Args:
-        openai_api_key: OpenAI API key
+        api_key: API key (OpenAI or Google Gemini)
         profile_path: Path to user profile YAML/TXT file
         model: LLM model to use
+        provider: "openai" or "gemini"
     
     Returns:
         Configured CoverLetterGenerator
@@ -173,9 +192,10 @@ async def create_cover_letter_generator(
     
     # Create generator
     generator = CoverLetterGenerator(
-        openai_api_key=openai_api_key,
+        api_key=api_key,
         model=model,
         profile=profile,
+        provider=provider,
     )
     
     return generator

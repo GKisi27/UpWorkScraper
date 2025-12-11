@@ -57,8 +57,10 @@ class Settings(BaseSettings):
     proxy_url: Optional[str] = Field(default=None, description="Proxy URL (optional)")
     
     # AI settings
+    ai_provider: str = Field(default="gemini", description="AI provider: 'openai' or 'gemini'")
+    gemini_api_key: Optional[str] = Field(default=None, description="Google Gemini API key")
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key")
-    llm_model: str = Field(default="gpt-4o-mini", description="LLM model to use")
+    llm_model: str = Field(default="gemini-1.5-flash", description="LLM model to use")
     profile_path: str = Field(default="./profile.yaml", description="Path to user profile")
     
     # Logging
@@ -81,8 +83,32 @@ class Settings(BaseSettings):
         return self.proxy_url is not None and self.proxy_url != ""
     
     @property
+    def has_ai_key(self) -> bool:
+        """Check if an AI API key is configured."""
+        if self.ai_provider == "gemini":
+            return (
+                self.gemini_api_key is not None 
+                and self.gemini_api_key != "" 
+                and not self.gemini_api_key.startswith("your-")
+            )
+        else:  # openai
+            return (
+                self.openai_api_key is not None 
+                and self.openai_api_key != "" 
+                and not self.openai_api_key.startswith("your-")
+            )
+    
+    @property
+    def api_key(self) -> Optional[str]:
+        """Get the appropriate API key based on provider."""
+        if self.ai_provider == "gemini":
+            return self.gemini_api_key
+        else:
+            return self.openai_api_key
+    
+    @property
     def has_openai_key(self) -> bool:
-        """Check if OpenAI API key is configured."""
+        """Check if OpenAI API key is configured (legacy property)."""
         return (
             self.openai_api_key is not None 
             and self.openai_api_key != "" 
